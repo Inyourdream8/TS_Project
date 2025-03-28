@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -98,4 +99,45 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Enhanced Form Elements */
+  input, select, textarea {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    @apply ring-finance-primary border-finance-primary transform scale-[1.01];
+  }
+  
+  button {
+    @apply transition-all duration-200;
+  }
+  
+  button:hover:not(:disabled) {
+    @apply transform scale-[1.02];
+  }
+  
+  /* Financial Application Styles */
+  .financial-gradient {
+    @apply bg-gradient-soft;
+  }
+  
+  .input-animated {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .input-animated:focus-within {
+    @apply transform -translate-y-1 shadow-md;
+  }
+}
+
+/* Professional Typography  */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+.font-heading {
+  font-family: 'Montserrat', sans-serif;
+}
+
+.font-body {
+  font-family: 'Inter', sans-serif;
 }

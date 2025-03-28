@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// New financial theme colors
+				finance: {
+					primary: "#1e6e8f",
+					secondary: "#2e7d32",
+					accent: "#ff7c7c",
+					neutral: "#333f48",
+					light: "#e0f2f1"
 				}
 			},
 			borderRadius: {
@@ -84,11 +93,35 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
+				'progress-fill': {
+					'0%': { width: '0%' },
+					'100%': { width: '100%' }
+				},
+				'pulse-scale': {
+					'0%, 100%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.05)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
+				'progress-fill': 'progress-fill 2s ease-out forwards',
+				'pulse-scale': 'pulse-scale 2s infinite ease-in-out'
+			},
+			backgroundImage: {
+				'gradient-soft': 'linear-gradient(135deg, #e6f7ff 0%, #d0f0e4 100%)'
 			}
 		}
 	},
