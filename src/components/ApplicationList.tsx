@@ -10,9 +10,10 @@ interface ApplicationListProps {
   applications: LoanApplication[];
   isLoading: boolean;
   onView: (id: string) => void;
+  compact?: boolean; // Added the compact prop as optional boolean
 }
 
-const ApplicationList = ({ applications, isLoading, onView }: ApplicationListProps) => {
+const ApplicationList = ({ applications, isLoading, onView, compact }: ApplicationListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -35,9 +36,9 @@ const ApplicationList = ({ applications, isLoading, onView }: ApplicationListPro
   return (
     <div className="space-y-4">
       {applications.map((application) => (
-        <Card key={application.id} className="overflow-hidden">
+        <Card key={application.id} className={`overflow-hidden ${compact ? 'mb-2' : ''}`}>
           <div className="md:hidden">
-            <CardContent className="p-6">
+            <CardContent className={compact ? "p-4" : "p-6"}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <p className="text-sm text-gray-500">Application</p>
@@ -52,20 +53,25 @@ const ApplicationList = ({ applications, isLoading, onView }: ApplicationListPro
                   <p className="font-medium">{formatCurrency(application.loan_amount)}</p>
                 </div>
                 
-                <div>
-                  <p className="text-sm text-gray-500">Purpose</p>
-                  <p>{application.loan_purpose}</p>
-                </div>
-                
-                <div>
-                  <p className="text-sm text-gray-500">Date</p>
-                  <p>{formatDate(application.created_at)}</p>
-                </div>
+                {!compact && (
+                  <>
+                    <div>
+                      <p className="text-sm text-gray-500">Purpose</p>
+                      <p>{application.loan_purpose}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-gray-500">Date</p>
+                      <p>{formatDate(application.created_at)}</p>
+                    </div>
+                  </>
+                )}
               </div>
               
               <Button 
                 className="w-full mt-4"
                 onClick={() => onView(application.id)}
+                size={compact ? "sm" : "default"}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
@@ -74,11 +80,13 @@ const ApplicationList = ({ applications, isLoading, onView }: ApplicationListPro
           </div>
           
           <div className="hidden md:block">
-            <div className="grid grid-cols-7 gap-4 p-6 items-center">
+            <div className={`grid grid-cols-7 gap-4 ${compact ? 'p-4' : 'p-6'} items-center`}>
               <div className="col-span-2">
                 <p className="text-sm text-gray-500">Application</p>
                 <h3 className="font-semibold">{application.application_number}</h3>
-                <p className="text-sm text-gray-500 mt-1">{formatDate(application.created_at)}</p>
+                {!compact && (
+                  <p className="text-sm text-gray-500 mt-1">{formatDate(application.created_at)}</p>
+                )}
               </div>
               
               <div>
@@ -86,16 +94,24 @@ const ApplicationList = ({ applications, isLoading, onView }: ApplicationListPro
                 <p className="font-medium">{formatCurrency(application.loan_amount)}</p>
               </div>
               
-              <div className="col-span-2">
-                <p className="text-sm text-gray-500">Purpose</p>
-                <p>{application.loan_purpose}</p>
+              <div className={compact ? "col-span-1" : "col-span-2"}>
+                {!compact ? (
+                  <>
+                    <p className="text-sm text-gray-500">Purpose</p>
+                    <p>{application.loan_purpose}</p>
+                  </>
+                ) : (
+                  <ApplicationStatusBadge status={application.status} />
+                )}
               </div>
               
-              <div>
-                <ApplicationStatusBadge status={application.status} />
-              </div>
+              {!compact && (
+                <div>
+                  <ApplicationStatusBadge status={application.status} />
+                </div>
+              )}
               
-              <div className="text-right">
+              <div className={`text-right ${compact ? "col-span-3" : ""}`}>
                 <Button
                   variant="outline"
                   size="sm"
