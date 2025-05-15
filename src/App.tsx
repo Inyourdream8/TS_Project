@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { SidebarNavigation } from "@/components/SidebarNavigation";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -26,9 +27,30 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/application/:id" element={<Application />} />
-            <Route path="/apply" element={<Apply />} />
+            <Route
+              path="/dashboard"
+              element={
+                <SidebarNavigation>
+                  <Dashboard />
+                </SidebarNavigation>
+              }
+            />
+            <Route
+              path="/application/:id"
+              element={
+                <SidebarNavigation>
+                  <Application />
+                </SidebarNavigation>
+              }
+            />
+            <Route
+              path="/apply"
+              element={
+                <SidebarNavigation>
+                  <Apply />
+                </SidebarNavigation>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
