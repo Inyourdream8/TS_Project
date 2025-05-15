@@ -143,11 +143,11 @@ export const SidebarNavigation = ({
               <div className="flex items-center gap-3">
                 <Avatar className="h-9 w-9">
                   <AvatarFallback>
-                    {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
+                    {user?.full_name?.charAt(0) || user?.email?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="overflow-hidden">
-                  <p className="text-sm font-medium leading-none truncate">{user?.name || user?.email || "User"}</p>
+                  <p className="text-sm font-medium leading-none truncate">{user?.full_name || user?.email || "User"}</p>
                   {user?.email && <p className="text-xs text-muted-foreground truncate">{user.email}</p>}
                 </div>
               </div>
