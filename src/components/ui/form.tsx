@@ -45,14 +45,17 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const formContext = useFormContext()
   
-  // Add a check to ensure formContext exists before destructuring
-  const { getFieldState, formState } = formContext || {}
-
   if (!fieldContext) {
     throw new Error("useFormField should be used within <FormField>")
   }
 
-  const fieldState = formContext ? getFieldState(fieldContext.name, formState) : {}
+  // Define a default empty state that includes all expected properties
+  const defaultState = { error: undefined, isDirty: false, isTouched: false, invalid: false }
+  
+  // Only try to get field state if form context exists
+  const fieldState = formContext 
+    ? { ...defaultState, ...formContext.getFieldState(fieldContext.name, formContext.formState) }
+    : defaultState
 
   const { id } = itemContext
 
