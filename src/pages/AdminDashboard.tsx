@@ -61,7 +61,8 @@ const AdminDashboard = () => {
 
   const handleApprove = async (applicationId: string) => {
     try {
-      await api.applications.approve(applicationId);
+      // Use updateStatus instead of approve
+      await api.applications.updateStatus(applicationId, "approved", "Application approved by administrator");
       toast({
         title: "Application approved",
         description: "The loan application has been approved successfully.",
@@ -82,7 +83,8 @@ const AdminDashboard = () => {
 
   const handleReject = async (applicationId: string) => {
     try {
-      await api.applications.reject(applicationId);
+      // Use updateStatus instead of reject
+      await api.applications.updateStatus(applicationId, "rejected", "Application rejected by administrator");
       toast({
         title: "Application rejected",
         description: "The loan application has been rejected.",

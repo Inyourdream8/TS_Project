@@ -20,13 +20,14 @@ interface LoanChartsProps {
   applications: LoanApplication[];
   transactions: any[];
   userId?: string;
+  isAdmin?: boolean;
 }
 
-const LoanCharts = ({ applications, transactions, userId }: LoanChartsProps) => {
-  // Filter applications if userId is provided
-  const userApplications = userId 
-    ? applications.filter(app => app.user_id === userId)
-    : applications;
+const LoanCharts = ({ applications, transactions, userId, isAdmin }: LoanChartsProps) => {
+  // Filter applications based on user role
+  const userApplications = isAdmin 
+    ? applications
+    : applications.filter(app => app.user_id === userId);
   
   // Generate monthly loan data
   const getMonthlyLoanData = () => {

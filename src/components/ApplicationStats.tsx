@@ -4,12 +4,25 @@ import { LoanApplication } from "@/types/application";
 
 interface ApplicationStatsProps {
   applications: LoanApplication[];
-  userId: string;
+  userId?: string;
+  isAdmin?: boolean;
 }
 
-const ApplicationStats = ({ applications, userId }: ApplicationStatsProps) => {
+const ApplicationStats = ({ applications, userId, isAdmin }: ApplicationStatsProps) => {
   const getStatusCount = (status: string) => {
+    // If admin, count all apps with that status
+    // If regular user, only count their own
+    if (isAdmin) {
+      return applications.filter(app => app.status === status).length;
+    }
     return applications.filter(app => app.user_id === userId && app.status === status).length;
+  };
+  
+  const getTotalCount = () => {
+    if (isAdmin) {
+      return applications.length;
+    }
+    return applications.filter(app => app.user_id === userId).length;
   };
 
   return (
@@ -17,11 +30,13 @@ const ApplicationStats = ({ applications, userId }: ApplicationStatsProps) => {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-lg font-medium">Total Applications</CardTitle>
-          <CardDescription>Your submitted applications</CardDescription>
+          <CardDescription>
+            {isAdmin ? "All submitted applications" : "Your submitted applications"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold">
-            {applications.filter(app => app.user_id === userId).length}
+            {getTotalCount()}
           </div>
         </CardContent>
       </Card>

@@ -6,12 +6,26 @@ import { LoanApplication } from "@/types/application";
 interface ApplicationTabsProps {
   applications: LoanApplication[];
   isLoading: boolean;
-  userId: string;
+  userId?: string;
+  isAdmin?: boolean;
   onView: (id: string) => void;
+  onApprove?: (id: string) => void;
+  onReject?: (id: string) => void;
 }
 
-const ApplicationTabs = ({ applications, isLoading, userId, onView }: ApplicationTabsProps) => {
-  const userApplications = applications.filter(app => app.user_id === userId);
+const ApplicationTabs = ({ 
+  applications, 
+  isLoading, 
+  userId, 
+  isAdmin, 
+  onView,
+  onApprove,
+  onReject 
+}: ApplicationTabsProps) => {
+  // Filter applications based on user role
+  const filteredApplications = isAdmin 
+    ? applications 
+    : applications.filter(app => app.user_id === userId);
   
   return (
     <Tabs defaultValue="all" className="w-full">
@@ -24,33 +38,45 @@ const ApplicationTabs = ({ applications, isLoading, userId, onView }: Applicatio
       
       <TabsContent value="all">
         <ApplicationList 
-          applications={userApplications} 
+          applications={filteredApplications} 
           isLoading={isLoading} 
           onView={onView}
+          onApprove={onApprove}
+          onReject={onReject}
+          isAdmin={isAdmin}
         />
       </TabsContent>
       
       <TabsContent value="pending">
         <ApplicationList 
-          applications={userApplications.filter(app => app.status === "pending")} 
+          applications={filteredApplications.filter(app => app.status === "pending")} 
           isLoading={isLoading} 
           onView={onView}
+          onApprove={onApprove}
+          onReject={onReject}
+          isAdmin={isAdmin}
         />
       </TabsContent>
       
       <TabsContent value="approved">
         <ApplicationList 
-          applications={userApplications.filter(app => app.status === "approved")} 
+          applications={filteredApplications.filter(app => app.status === "approved")} 
           isLoading={isLoading} 
           onView={onView}
+          onApprove={onApprove}
+          onReject={onReject}
+          isAdmin={isAdmin}
         />
       </TabsContent>
       
       <TabsContent value="rejected">
         <ApplicationList 
-          applications={userApplications.filter(app => app.status === "rejected")} 
+          applications={filteredApplications.filter(app => app.status === "rejected")} 
           isLoading={isLoading} 
           onView={onView}
+          onApprove={onApprove}
+          onReject={onReject}
+          isAdmin={isAdmin}
         />
       </TabsContent>
     </Tabs>
