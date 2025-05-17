@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
@@ -10,47 +11,39 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+
 const registerSchema = z.object({
   fullName: z.string().min(3, "Full name must be at least 3 characters"),
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().min(10, "Phone number must be at least 10 characters"),
-  address: z.string().min(5, "Address must be at least 5 characters"),
-  dateOfBirth: z.string().refine(val => {
-    const date = new Date(val);
-    const eighteenYearsAgo = new Date();
-    eighteenYearsAgo.setFullYear(eighteenYearsAgo.getFullYear() - 18);
-    return date <= eighteenYearsAgo;
-  }, "You must be at least 18 years old"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string()
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"]
 });
+
 type RegisterFormValues = z.infer<typeof registerSchema>;
+
 const Register = () => {
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    register
-  } = useAuth();
+  const { toast } = useToast();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: "",
       email: "",
       phone: "",
-      address: "",
-      dateOfBirth: "",
       password: "",
       confirmPassword: ""
     }
   });
+
   const onSubmit = async (data: RegisterFormValues) => {
     setIsLoading(true);
     try {
@@ -59,15 +52,18 @@ const Register = () => {
         password: data.password,
         full_name: data.fullName,
         phone_number: data.phone,
-        address: data.address,
-        date_of_birth: data.dateOfBirth,
+        address: "",
+        date_of_birth: "",
         role: "applicant"
       });
+      
       toast({
         title: "Registration successful",
         description: "Your account has been created successfully."
       });
-      navigate("/dashboard");
+      
+      // Direct customers to the loan application form after registration
+      navigate("/apply");
     } catch (error) {
       console.error("Registration error:", error);
       toast({
@@ -79,6 +75,7 @@ const Register = () => {
       setIsLoading(false);
     }
   };
+
   return <div className="min-h-screen bg-gray-50 py-12 px-4">
       <Link to="/" className="absolute top-4 left-4 text-blue-600 hover:text-blue-800 flex items-center">
         <ArrowLeft className="w-4 h-4 mr-1" />
@@ -87,7 +84,7 @@ const Register = () => {
       
       <Card className="w-full max-w-2xl mx-auto">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create an account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Create a Customer Account</CardTitle>
           <CardDescription className="text-center">
             Enter your information to create an account
           </CardDescription>
@@ -122,19 +119,11 @@ const Register = () => {
               }) => <FormItem className="w-full">
                       <FormLabel>Phone number</FormLabel>
                       <FormControl>
-                        <Input placeholder="+15551234567" disabled={isLoading} className="w-full" />
+                        <Input placeholder="+639XXXXXXXXX" {...field} disabled={isLoading} className="w-full" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>} />
-                
-                <FormField control={form.control} name="dateOfBirth" render={({
-                field
-              }) => {}} />
               </div>
-              
-              <FormField control={form.control} name="address" render={({
-              field
-            }) => {}} />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="password" render={({
@@ -188,4 +177,5 @@ const Register = () => {
       </Card>
     </div>;
 };
+
 export default Register;
