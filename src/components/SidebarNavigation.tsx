@@ -91,21 +91,28 @@ export const SidebarNavigation = ({
           <SidebarContent>
             <SidebarGroup>
               <SidebarMenu>
-                <SidebarNavItem 
-                  to="/dashboard" 
-                  icon={<LayoutDashboard className="h-4 w-4" />} 
-                  label="Dashboard" 
-                />
+                {user?.role === "admin" ? (
+                  <SidebarNavItem 
+                    to="/admin/dashboard" 
+                    icon={<LayoutDashboard className="h-4 w-4" />} 
+                    label="Admin Dashboard" 
+                  />
+                ) : (
+                  <SidebarNavItem 
+                    to="/dashboard" 
+                    icon={<LayoutDashboard className="h-4 w-4" />} 
+                    label="Dashboard" 
+                  />
+                )}
+
+                {/* Both user types can access apply page */}
                 <SidebarNavItem 
                   to="/apply" 
                   icon={<FileText className="h-4 w-4" />} 
                   label="Apply for Loan" 
                 />
-                <SidebarNavItem 
-                  to="/applications" 
-                  icon={<FileText className="h-4 w-4" />} 
-                  label="Applications" 
-                />
+
+                {/* Common menu items for all users */}
                 <SidebarNavItem 
                   to="/transactions" 
                   icon={<CreditCard className="h-4 w-4" />} 
@@ -121,16 +128,22 @@ export const SidebarNavigation = ({
                   icon={<Settings className="h-4 w-4" />} 
                   label="Settings" 
                 />
-                {/* Only show admin section if user has admin role */}
+
+                {/* Admin-only section */}
                 {user?.role === "admin" && (
                   <>
                     <SidebarMenuItem className="mt-4">
-                      <div className="px-2 text-xs font-medium text-muted-foreground">Admin</div>
+                      <div className="px-2 text-xs font-medium text-muted-foreground">Admin Controls</div>
                     </SidebarMenuItem>
                     <SidebarNavItem 
                       to="/admin/users" 
                       icon={<Users className="h-4 w-4" />} 
-                      label="Users" 
+                      label="Manage Users" 
+                    />
+                    <SidebarNavItem 
+                      to="/admin/applications" 
+                      icon={<FileText className="h-4 w-4" />} 
+                      label="All Applications" 
                     />
                   </>
                 )}
@@ -163,7 +176,9 @@ export const SidebarNavigation = ({
           <div className="flex items-center border-b px-4 py-2 h-14">
             <SidebarTrigger />
             <div className="ml-3">
-              <h2 className="text-lg font-semibold">Finance Dashboard</h2>
+              <h2 className="text-lg font-semibold">
+                {user?.role === "admin" ? "Admin Portal" : "Finance Dashboard"}
+              </h2>
             </div>
           </div>
           <main className="flex-1 overflow-auto p-4">

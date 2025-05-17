@@ -28,16 +28,23 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const applicationsData = await api.applications.getAll();
-        setApplications(applicationsData);
         
         if (user) {
+          // For regular users, only fetch their own applications
+          if (user.role === "admin") {
+            navigate("/admin/dashboard");
+            return;
+          }
+          
+          const applicationsData = await api.applications.getAll();
+          const userApplications = applicationsData.filter(app => app.user_id === user.id);
+          setApplications(userApplications);
+          
           const userTransactions = await api.transactions.getByUserId(user.id);
           setTransactions(userTransactions);
           
           // Get the most recent approved application for the user
-          const userApps = applicationsData.filter(app => app.user_id === user.id);
-          const approvedApp = userApps.find(app => app.status === "approved");
+          const approvedApp = userApplications.find(app => app.status === "approved");
           
           if (approvedApp) {
             setActiveApplication(approvedApp);
@@ -58,7 +65,7 @@ const Dashboard = () => {
     };
 
     fetchData();
-  }, [toast, user]);
+  }, [toast, user, navigate]);
 
   const handleLogout = async () => {
     try {
@@ -119,7 +126,7 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">Dashboard</h2>
+            <h2 className="text-3xl font-bold text-gray-900">My Dashboard</h2>
             <p className="text-gray-500">Manage your loan applications and account</p>
           </div>
           <Button 
@@ -159,7 +166,7 @@ const Dashboard = () => {
         />
 
         <ApplicationTabs 
-          applications={applications}
+          applications={applications.filter(app => app.user_id === user.id)}
           isLoading={isLoading}
           userId={user.id}
           onView={(id) => navigate(`/application/${id}`)}
