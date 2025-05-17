@@ -122,7 +122,7 @@ const Register = () => {
               }) => <FormItem className="w-full">
                       <FormLabel>Phone number</FormLabel>
                       <FormControl>
-                        <Input placeholder="+15551234567" {...field} disabled={isLoading} />
+                        <Input placeholder="+15551234567" disabled={isLoading} className="w-full" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>} />
