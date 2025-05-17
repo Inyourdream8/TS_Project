@@ -8,7 +8,7 @@ interface ApplicationStatsProps {
   isAdmin?: boolean;
 }
 
-const ApplicationStats = ({ applications, userId, isAdmin }: ApplicationStatsProps) => {
+const ApplicationStats = ({ applications, userId, isAdmin = false }: ApplicationStatsProps) => {
   const getStatusCount = (status: string) => {
     // If admin, count all apps with that status
     // If regular user, only count their own

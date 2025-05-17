@@ -17,7 +17,7 @@ const ApplicationTabs = ({
   applications, 
   isLoading, 
   userId, 
-  isAdmin, 
+  isAdmin = false, 
   onView,
   onApprove,
   onReject 
@@ -41,8 +41,6 @@ const ApplicationTabs = ({
           applications={filteredApplications} 
           isLoading={isLoading} 
           onView={onView}
-          onApprove={onApprove}
-          onReject={onReject}
           isAdmin={isAdmin}
         />
       </TabsContent>
@@ -52,8 +50,6 @@ const ApplicationTabs = ({
           applications={filteredApplications.filter(app => app.status === "pending")} 
           isLoading={isLoading} 
           onView={onView}
-          onApprove={onApprove}
-          onReject={onReject}
           isAdmin={isAdmin}
         />
       </TabsContent>
@@ -63,8 +59,6 @@ const ApplicationTabs = ({
           applications={filteredApplications.filter(app => app.status === "approved")} 
           isLoading={isLoading} 
           onView={onView}
-          onApprove={onApprove}
-          onReject={onReject}
           isAdmin={isAdmin}
         />
       </TabsContent>
@@ -74,8 +68,6 @@ const ApplicationTabs = ({
           applications={filteredApplications.filter(app => app.status === "rejected")} 
           isLoading={isLoading} 
           onView={onView}
-          onApprove={onApprove}
-          onReject={onReject}
           isAdmin={isAdmin}
         />
       </TabsContent>
