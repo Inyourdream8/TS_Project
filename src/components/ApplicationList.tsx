@@ -10,10 +10,11 @@ interface ApplicationListProps {
   applications: LoanApplication[];
   isLoading: boolean;
   onView: (id: string) => void;
-  compact?: boolean; // Added the compact prop as optional boolean
+  compact?: boolean;
+  isAdmin?: boolean; // Added isAdmin property
 }
 
-const ApplicationList = ({ applications, isLoading, onView, compact }: ApplicationListProps) => {
+const ApplicationList = ({ applications, isLoading, onView, compact, isAdmin = false }: ApplicationListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
