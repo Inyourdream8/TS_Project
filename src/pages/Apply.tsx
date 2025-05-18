@@ -1,102 +1,26 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, ArrowRight, DollarSign, Briefcase, Building, CreditCard, Check, ChevronRight, FileText, User, Calendar } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import StepWizard from "@/components/StepWizard";
-import { focusedFieldAnimation, stepTransition } from "@/lib/animate";
-import DocumentUpload from "@/components/DocumentUpload";
+import { stepTransition } from "@/lib/animate";
+import { LoanApplicationFormValues, loanApplicationSchema } from "@/types/forms";
+import { PersonalInfoSection } from "@/components/apply/PersonalInfoSection";
+import { EmploymentSection } from "@/components/apply/EmploymentSection";
+import { LoanDetailsSection } from "@/components/apply/LoanDetailsSection";
+import { BankingSection } from "@/components/apply/BankingSection";
+import { DocumentsSection } from "@/components/apply/DocumentsSection";
 
 // Step titles
 const STEPS = ["Personal Information", "Employment", "Loan Details", "Banking", "Documents"];
-
-// Data constants
-const employmentStatuses = [
-  "Employee",
-  "Unemployed",
-  "Retired",
-  "Self Employed"
-];
-
-const employmentDurations = [
-  { value: "less-than-1", label: "Less than 1 year" },
-  { value: "1-3", label: "1-3 years" },
-  { value: "3-5", label: "3-5 years" },
-  { value: "5-10", label: "5-10 years" },
-  { value: "more-than-10", label: "More than 10 years" },
-];
-
-const loanTerms = [
-  { value: "6", label: "6 months" },
-  { value: "12", label: "12 months" },
-  { value: "24", label: "24 months" },
-  { value: "36", label: "36 months" },
-  { value: "48", label: "48 months" },
-];
-
-const loanPurposes = [
-  "Home renovation",
-  "Debt consolidation",
-  "Education",
-  "Medical expenses",
-  "Business expansion",
-  "Vehicle purchase",
-  "Travel",
-  "Wedding",
-  "Other",
-];
-
-const accountTypes = ["checking", "savings"];
-
-// Form validation schema
-const loanApplicationSchema = z.object({
-  // Personal Information
-  fullName: z.string().min(3, "Full name must be at least 3 characters"),
-  nationalId: z.string().min(5, "National ID must be at least 5 characters"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 characters"),
-  address: z.string().min(5, "Address must be at least 5 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  
-  // Employment Information
-  employmentStatus: z.string().min(1, "Please select your employment status"),
-  employer: z.string().optional().refine(val => {
-    // Employer is required if employment status is "Employee"
-    return val && val.length > 0;
-  }, { message: "Employer name is required" }),
-  employmentDuration: z.string().min(1, "Please select your employment duration"),
-  monthlyIncome: z.coerce.number()
-    .min(5000, "Monthly income must be at least PHP 5,000"),
-  
-  // Loan Details
-  loanAmount: z.coerce.number()
-    .min(100000, "Loan amount must be at least PHP 100,000")
-    .max(3000000, "Loan amount cannot exceed PHP 3,000,000"),
-  loanTerm: z.string().min(1, "Please select a loan term"),
-  loanPurpose: z.string().min(1, "Please select a loan purpose"),
-  
-  // Banking Details
-  bankName: z.string().min(1, "Please provide your bank name"),
-  accountName: z.string().min(3, "Account name must be at least 3 characters"),
-  accountNumber: z.string().min(8, "Please provide a valid account number"),
-  accountType: z.string().min(1, "Please select your account type"),
-  
-  // Documents section has file upload, handled separately
-  additionalInfo: z.string().optional(),
-});
-
-type LoanApplicationFormValues = z.infer<typeof loanApplicationSchema>;
 
 const Apply = () => {
   const navigate = useNavigate();
@@ -141,8 +65,9 @@ const Apply = () => {
   });
 
   // Handle file upload
-  const handleFileUpload = (files: File[]) => {
-    setDocuments(files);
+  const handleFileUpload = async (file: File, documentType: string) => {
+    // Store uploaded file in state
+    setDocuments([...documents, file]);
   };
 
   // Handle form submission
@@ -200,14 +125,12 @@ const Apply = () => {
       // Upload documents if any
       if (documents.length > 0) {
         try {
-          // This should be implemented in your API
           await Promise.all(documents.map(file => 
             api.documents.upload(newApplication.id, file, "proof_of_income")
           ));
         } catch (docError) {
           console.error("Error uploading documents:", docError);
           toast({
-            variant: "warning",
             title: "Document upload issue",
             description: "Your application was submitted, but there was an issue uploading some documents."
           });
@@ -256,18 +179,6 @@ const Apply = () => {
     navigate("/login", { state: { returnTo: "/apply" } });
     return null;
   }
-
-  // Calculate estimated monthly payment
-  const calculateMonthlyPayment = () => {
-    const amount = form.watch("loanAmount") || 0;
-    const termMonths = parseInt(form.watch("loanTerm") || "12");
-    const rate = 4.0 / 100 / 12; // Monthly interest rate (4% annual)
-    
-    if (amount <= 0 || termMonths <= 0) return 0;
-    
-    const monthlyPayment = (amount * rate * Math.pow(1 + rate, termMonths)) / (Math.pow(1 + rate, termMonths) - 1);
-    return monthlyPayment.toFixed(2);
-  };
 
   // Calculate completion percentage for current step
   const getStepCompletion = (step: number) => {
@@ -367,500 +278,32 @@ const Apply = () => {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Step 1: Personal Information */}
                 <div className={stepTransition(currentStep === 0)}>
-                  <h3 className="text-lg font-semibold flex items-center mb-4">
-                    <User className="mr-2 h-5 w-5" />
-                    Personal Information
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="fullName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              placeholder="Enter your full name" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="nationalId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>National ID</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              placeholder="Enter your National ID number" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="phoneNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Phone Number</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              placeholder="+639XXXXXXXXX" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              type="email"
-                              placeholder="your.email@example.com" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  
-                  <FormField
-                    control={form.control}
-                    name="address"
-                    render={({ field }) => (
-                      <FormItem className="mt-6">
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            {...field} 
-                            placeholder="Enter your complete address" 
-                            className={`min-h-[80px] ${focusedFieldAnimation()}`}
-                            disabled={isSubmitting}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <PersonalInfoSection form={form} isSubmitting={isSubmitting} />
                 </div>
 
                 {/* Step 2: Employment Information */}
                 <div className={stepTransition(currentStep === 1)}>
-                  <h3 className="text-lg font-semibold flex items-center mb-4">
-                    <Briefcase className="mr-2 h-5 w-5" />
-                    Employment Information
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="employmentStatus"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Employment Status</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              disabled={isSubmitting}
-                            >
-                              <SelectTrigger className={focusedFieldAnimation()}>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {employmentStatuses.map((status) => (
-                                  <SelectItem key={status} value={status}>
-                                    {status}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="employmentDuration"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Duration of Employment</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              disabled={isSubmitting}
-                            >
-                              <SelectTrigger className={focusedFieldAnimation()}>
-                                <SelectValue placeholder="Select duration" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {employmentDurations.map((duration) => (
-                                  <SelectItem key={duration.value} value={duration.value}>
-                                    {duration.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {form.watch("employmentStatus") === "Employee" && (
-                      <FormField
-                        control={form.control}
-                        name="employer"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Employer</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="Company name" 
-                                className={focusedFieldAnimation()}
-                                disabled={isSubmitting}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                    
-                    <FormField
-                      control={form.control}
-                      name="monthlyIncome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Monthly Income (PHP)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                              <Input 
-                                type="number" 
-                                className={`pl-8 ${focusedFieldAnimation()}`}
-                                {...field} 
-                                disabled={isSubmitting}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormDescription>
-                            Minimum monthly income: PHP 5,000
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <EmploymentSection form={form} isSubmitting={isSubmitting} />
                 </div>
 
                 {/* Step 3: Loan Details */}
                 <div className={stepTransition(currentStep === 2)}>
-                  <h3 className="text-lg font-semibold flex items-center mb-4">
-                    <DollarSign className="mr-2 h-5 w-5" />
-                    Loan Details
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="loanAmount"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Desired Loan Amount (PHP)</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                              <Input 
-                                type="number" 
-                                className={`pl-8 ${focusedFieldAnimation()}`}
-                                {...field} 
-                                disabled={isSubmitting}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormDescription>
-                            Amount between PHP 100,000 and PHP 3,000,000
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="loanTerm"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Loan Term</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              disabled={isSubmitting}
-                            >
-                              <SelectTrigger className={focusedFieldAnimation()}>
-                                <SelectValue placeholder="Select loan term" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {loanTerms.map((term) => (
-                                  <SelectItem key={term.value} value={term.value}>
-                                    {term.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="loanPurpose"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Loan Purpose</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              disabled={isSubmitting}
-                            >
-                              <SelectTrigger className={focusedFieldAnimation()}>
-                                <SelectValue placeholder="Select loan purpose" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {loanPurposes.map((purpose) => (
-                                  <SelectItem key={purpose} value={purpose}>
-                                    {purpose}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormItem>
-                      <FormLabel>Interest Rate</FormLabel>
-                      <div className="relative">
-                        <Input 
-                          value="4.0%" 
-                          disabled 
-                          className="bg-gray-50"
-                        />
-                      </div>
-                      <FormDescription>
-                        Fixed interest rate
-                      </FormDescription>
-                    </FormItem>
-                  </div>
-
-                  {/* Payment Estimate Card */}
-                  {form.watch("loanAmount") >= 100000 && form.watch("loanTerm") && (
-                    <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                        Estimated Monthly Payment
-                      </h3>
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            Based on {loanTerms.find(t => t.value === form.watch("loanTerm"))?.label || form.watch("loanTerm") + " months"} at 4% APR
-                          </p>
-                        </div>
-                        <div className="text-2xl font-bold text-blue-600">
-                          ₱{new Intl.NumberFormat('en-PH').format(parseFloat(calculateMonthlyPayment()))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <LoanDetailsSection form={form} isSubmitting={isSubmitting} />
                 </div>
 
                 {/* Step 4: Banking Information */}
                 <div className={stepTransition(currentStep === 3)}>
-                  <h3 className="text-lg font-semibold flex items-center mb-4">
-                    <Building className="mr-2 h-5 w-5" />
-                    Banking Information
-                  </h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="bankName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Bank Name</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              placeholder="Your bank name" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="accountName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Account Name</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              placeholder="Name on the account" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Enter the name exactly as it appears on your bank account
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="accountType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Account Type</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              disabled={isSubmitting}
-                            >
-                              <SelectTrigger className={focusedFieldAnimation()}>
-                                <SelectValue placeholder="Select account type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {accountTypes.map((type) => (
-                                  <SelectItem key={type} value={type}>
-                                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="accountNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Account Number</FormLabel>
-                          <FormControl>
-                            <Input 
-                              {...field} 
-                              placeholder="Your account number" 
-                              className={focusedFieldAnimation()}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Your account information is secure and encrypted
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <BankingSection form={form} isSubmitting={isSubmitting} />
                 </div>
 
                 {/* Step 5: Documents */}
                 <div className={stepTransition(currentStep === 4)}>
-                  <h3 className="text-lg font-semibold flex items-center mb-4">
-                    <FileText className="mr-2 h-5 w-5" />
-                    Required Documents
-                  </h3>
-                  
-                  <div className="space-y-6">
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Proof of Income</h4>
-                      <p className="text-sm text-gray-600 mb-4">
-                        Please upload at least one document that proves your income (e.g., pay slips, tax returns, bank statements)
-                      </p>
-                      
-                      <DocumentUpload 
-                        onUpload={handleFileUpload}
-                        existingFiles={[]}
-                        maxFiles={3}
-                        acceptedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                        maxSizeInMB={5}
-                      />
-                      
-                      {documents.length === 0 && (
-                        <p className="text-red-500 text-sm mt-2">
-                          At least one proof of income document is required
-                        </p>
-                      )}
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="additionalInfo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Additional Information (Optional)</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              {...field} 
-                              placeholder="Any additional information that might be relevant to your application" 
-                              disabled={isSubmitting}
-                              className="min-h-[100px]"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <DocumentsSection 
+                    form={form} 
+                    isSubmitting={isSubmitting}
+                    documents={documents}
+                    onDocumentUpload={handleFileUpload}
+                  />
                 </div>
               </form>
             </Form>

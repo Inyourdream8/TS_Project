@@ -1,4 +1,27 @@
 
+export interface Note {
+  id: string;
+  content: string;
+  created_at: string;
+  created_by: string;
+}
+
+export interface StatusHistory {
+  id: string;
+  status: string;
+  notes: string;
+  created_at: string;
+  created_by: string;
+}
+
+export interface Document {
+  id: string;
+  file_name: string;
+  file_url: string;
+  document_type: string;
+  uploaded_at: string;
+}
+
 export interface LoanApplication {
   id: string;
   user_id: string;
@@ -32,6 +55,11 @@ export interface LoanApplication {
   
   // Additional Information
   additional_info?: string;
+  
+  // Related data
+  documents?: Document[];
+  notes?: Note[];
+  status_history?: StatusHistory[];
   
   // Timestamps
   created_at: string;
