@@ -1,6 +1,6 @@
 
 import { User } from "@/types/user";
-import { LoanApplication } from "@/types/application";
+import { LoanApplication, Document, Note, StatusHistory } from "@/types/application";
 
 // Mock data for users
 const mockUsers: User[] = [
@@ -35,6 +35,10 @@ const mockApplications: LoanApplication[] = [
     user_id: "usr_1",
     application_number: "LW-20230101-1234",
     status: "pending",
+    full_name: "John Doe",
+    email: "john@example.com",
+    phone_number: "+15551234567",
+    address: "123 Main St, City, State, 12345",
     employment_status: "employed",
     employer: "Tech Corp Inc.",
     monthly_income: 5000,
@@ -55,6 +59,7 @@ const mockApplications: LoanApplication[] = [
         document_type: "id",
         file_name: "drivers_license.pdf",
         file_url: "/documents/drivers_license.pdf",
+        uploaded_at: "2023-01-15T12:30:00Z",
         created_at: "2023-01-15T12:30:00Z",
       },
       {
@@ -63,6 +68,7 @@ const mockApplications: LoanApplication[] = [
         document_type: "income_proof",
         file_name: "pay_stub.pdf",
         file_url: "/documents/pay_stub.pdf",
+        uploaded_at: "2023-01-15T12:35:00Z",
         created_at: "2023-01-15T12:35:00Z",
       },
     ],
@@ -70,7 +76,7 @@ const mockApplications: LoanApplication[] = [
       {
         id: "note_1",
         application_id: "app_1",
-        note: "Applicant has excellent credit score.",
+        content: "Applicant has excellent credit score.",
         created_at: "2023-01-16T10:00:00Z",
         created_by: "Loan Officer",
       },
@@ -80,7 +86,9 @@ const mockApplications: LoanApplication[] = [
         id: "stat_1",
         application_id: "app_1",
         status: "submitted",
+        notes: "",
         created_at: "2023-01-15T00:00:00Z",
+        created_by: "System",
       },
       {
         id: "stat_2",
@@ -88,6 +96,7 @@ const mockApplications: LoanApplication[] = [
         status: "pending",
         notes: "Application under initial review",
         created_at: "2023-01-15T12:00:00Z",
+        created_by: "Loan Officer",
       },
     ],
   },
@@ -96,6 +105,10 @@ const mockApplications: LoanApplication[] = [
     user_id: "usr_1",
     application_number: "LW-20230205-5678",
     status: "approved",
+    full_name: "John Doe",
+    email: "john@example.com",
+    phone_number: "+15551234567",
+    address: "123 Main St, City, State, 12345",
     employment_status: "employed",
     employer: "Tech Corp Inc.",
     monthly_income: 5000,
@@ -116,13 +129,17 @@ const mockApplications: LoanApplication[] = [
         id: "stat_3",
         application_id: "app_2",
         status: "submitted",
+        notes: "",
         created_at: "2023-02-05T00:00:00Z",
+        created_by: "System",
       },
       {
         id: "stat_4",
         application_id: "app_2",
         status: "pending",
+        notes: "",
         created_at: "2023-02-06T00:00:00Z",
+        created_by: "System",
       },
       {
         id: "stat_5",
@@ -130,6 +147,7 @@ const mockApplications: LoanApplication[] = [
         status: "approved",
         notes: "Application approved with standard terms",
         created_at: "2023-02-10T00:00:00Z",
+        created_by: "Loan Officer",
       },
     ],
   },
@@ -138,6 +156,10 @@ const mockApplications: LoanApplication[] = [
     user_id: "usr_1",
     application_number: "LW-20230310-9012",
     status: "rejected",
+    full_name: "John Doe",
+    email: "john@example.com",
+    phone_number: "+15551234567",
+    address: "123 Main St, City, State, 12345",
     employment_status: "employed",
     employer: "Tech Corp Inc.",
     monthly_income: 5000,
@@ -219,7 +241,7 @@ const calculateRepaymentSchedule = (loanAmount: number, interestRate: number, te
   return schedule;
 };
 
-// API methods organized by resource (following FastAPI router pattern)
+// API methods organized by resource
 export const api = {
   // Auth endpoints
   auth: {
@@ -346,7 +368,11 @@ export const api = {
         id: `app_${mockApplications.length + 1}`,
         user_id: applicationData.user_id,
         application_number: applicationNumber,
-        status: "pending",
+        status: "pending" as const,
+        full_name: applicationData.full_name || "",
+        email: applicationData.email || "",
+        phone_number: applicationData.phone_number || "",
+        address: applicationData.address || "",
         employment_status: applicationData.employment_status,
         employer: applicationData.employer,
         monthly_income: applicationData.monthly_income,
@@ -368,7 +394,9 @@ export const api = {
             id: `stat_${new Date().getTime()}`,
             application_id: `app_${mockApplications.length + 1}`,
             status: "pending",
+            notes: "",
             created_at: new Date().toISOString(),
+            created_by: "System",
           },
         ],
       };
@@ -378,7 +406,7 @@ export const api = {
       return newApplication;
     },
     
-    updateStatus: async (id: string, status: string, notes?: string) => {
+    updateStatus: async (id: string, status: "pending" | "approved" | "rejected" | "disbursed" | "closed" | "defaulted", notes?: string) => {
       // Simulate API call
       await delay(1000);
       
@@ -395,18 +423,21 @@ export const api = {
         application.status_history = [];
       }
       
-      application.status_history.push({
+      const newStatusHistory: StatusHistory = {
         id: `stat_${new Date().getTime()}`,
         application_id: id,
         status: status,
-        notes: notes,
+        notes: notes || "",
         created_at: new Date().toISOString(),
-      });
+        created_by: "Loan Officer",
+      };
+      
+      application.status_history.push(newStatusHistory);
       
       return application;
     },
     
-    addNote: async (id: string, note: string) => {
+    addNote: async (id: string, noteContent: string) => {
       // Simulate API call
       await delay(800);
       
@@ -419,10 +450,10 @@ export const api = {
         application.notes = [];
       }
       
-      const newNote = {
+      const newNote: Note = {
         id: `note_${new Date().getTime()}`,
         application_id: id,
-        note: note,
+        content: noteContent,
         created_at: new Date().toISOString(),
         created_by: "You",
       };
@@ -464,12 +495,13 @@ export const api = {
         application.documents = [];
       }
       
-      const newDocument = {
+      const newDocument: Document = {
         id: `doc_${new Date().getTime()}`,
         application_id: applicationId,
         document_type: documentType,
         file_name: file.name,
         file_url: URL.createObjectURL(file), // In a real app, this would be a server URL
+        uploaded_at: new Date().toISOString(),
         created_at: new Date().toISOString(),
       };
       
@@ -545,7 +577,7 @@ export const api = {
     return api.applications.create(applicationData);
   },
   
-  updateApplicationStatus: async (id: string, status: string, notes?: string) => {
+  updateApplicationStatus: async (id: string, status: "pending" | "approved" | "rejected" | "disbursed" | "closed" | "defaulted", notes?: string) => {
     return api.applications.updateStatus(id, status, notes);
   },
   
