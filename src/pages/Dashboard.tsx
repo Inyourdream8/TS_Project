@@ -1,18 +1,15 @@
-
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/components/ui/use-toast";
-import { PlusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { DashboardHeader } from "@/components/DashboardHeader";
+import { DashboardGrid } from "@/components/DashboardGrid";
+import { ApplicationTabs } from "@/components/ApplicationTabs";
+import { ActiveLoan } from "@/components/ActiveLoan";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { LoanApplication } from "@/types/application";
-import DashboardHeader from "@/components/DashboardHeader";
-import ApplicationStats from "@/components/ApplicationStats";
-import ActiveLoan from "@/components/ActiveLoan";
-import DashboardGrid from "@/components/DashboardGrid";
-import ApplicationTabs from "@/components/ApplicationTabs";
-import LoanCharts from "@/components/LoanCharts";
+import { Loader } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();

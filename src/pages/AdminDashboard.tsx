@@ -1,29 +1,17 @@
-
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { ApplicationTabs } from "@/components/ApplicationTabs";
+import { ApplicationStats } from "@/components/ApplicationStats";
+import { LoanCharts } from "@/components/LoanCharts";
+import { TransactionsTable } from "@/components/admin/TransactionsTable";
+import { UserManagement } from "@/components/admin/UserManagement";
+import { DashboardHeader } from "@/components/DashboardHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { LoanApplication } from "@/types/application";
-import { 
-  Tabs, TabsContent, TabsList, TabsTrigger 
-} from "@/components/ui/tabs";
-import {
-  Card, CardContent, CardDescription, CardHeader, CardTitle
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { 
-  FileText, Users, CreditCard, Search, RefreshCcw
-} from "lucide-react";
-
-import DashboardHeader from "@/components/DashboardHeader";
-import ApplicationStats from "@/components/ApplicationStats";
-import ApplicationTabs from "@/components/ApplicationTabs";
-import LoanCharts from "@/components/LoanCharts";
-import { ApplicationActions } from "@/components/admin/ApplicationActions";
-import { UserManagement } from "@/components/admin/UserManagement";
-import { TransactionsTable } from "@/components/admin/TransactionsTable";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();

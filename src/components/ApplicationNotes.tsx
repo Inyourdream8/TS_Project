@@ -3,11 +3,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Note } from "@/types/application";
+import { Note, StatusHistory } from "@/types/application";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "@/hooks/use-toast";
-import { Pencil } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 
 interface ApplicationNotesProps {
@@ -18,6 +17,7 @@ interface ApplicationNotesProps {
 
 export const ApplicationNotes = ({ applicationId, notes, onNoteAdded }: ApplicationNotesProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [newNote, setNewNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,7 +26,7 @@ export const ApplicationNotes = ({ applicationId, notes, onNoteAdded }: Applicat
     
     setIsSubmitting(true);
     try {
-      await api.applications.addNote(applicationId, newNote);
+      await api.addNoteToApplication(applicationId, newNote);
       setNewNote("");
       onNoteAdded();
       toast({

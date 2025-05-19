@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ApplicationList } from "@/components/ApplicationList";
+import ApplicationList from "@/components/ApplicationList";
 import { LoanApplication } from "@/types/application";
 
 export interface ApplicationTabsProps {

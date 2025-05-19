@@ -1,174 +1,178 @@
 
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign } from "lucide-react";
-import { UseFormReturn } from "react-hook-form";
-import { focusedFieldAnimation } from "@/lib/animate";
-import { LoanApplicationFormValues } from "@/types/forms";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { formatCurrency } from "@/lib/utils";
 
-const loanTerms = [
+const loanTermOptions = [
   { value: "6", label: "6 months" },
   { value: "12", label: "12 months" },
+  { value: "18", label: "18 months" },
   { value: "24", label: "24 months" },
   { value: "36", label: "36 months" },
   { value: "48", label: "48 months" },
 ];
 
-const loanPurposes = [
-  "Home renovation",
-  "Debt consolidation",
-  "Education",
-  "Medical expenses",
-  "Business expansion",
-  "Vehicle purchase",
-  "Travel",
-  "Wedding",
-  "Other",
+const purposeOptions = [
+  { value: "personal", label: "Personal Use" },
+  { value: "business", label: "Business" },
+  { value: "education", label: "Education" },
+  { value: "debt_consolidation", label: "Debt Consolidation" },
+  { value: "home_improvement", label: "Home Improvement" },
+  { value: "emergency", label: "Emergency" },
+  { value: "other", label: "Other" },
 ];
 
-interface LoanDetailsSectionProps {
-  form: UseFormReturn<LoanApplicationFormValues>;
-  isSubmitting: boolean;
-}
-
-export const LoanDetailsSection = ({ form, isSubmitting }: LoanDetailsSectionProps) => {
-  // Calculate estimated monthly payment
-  const calculateMonthlyPayment = () => {
-    const amount = form.watch("loanAmount") || 0;
-    const termMonths = parseInt(form.watch("loanTerm") || "12");
-    const rate = 4.0 / 100 / 12; // Monthly interest rate (4% annual)
-    
-    if (amount <= 0 || termMonths <= 0) return 0;
-    
-    const monthlyPayment = (amount * rate * Math.pow(1 + rate, termMonths)) / (Math.pow(1 + rate, termMonths) - 1);
-    return monthlyPayment.toFixed(2);
-  };
+export const LoanDetailsSection = () => {
+  const { control } = useFormContext();
+  const [sliderValue, setSliderValue] = useState<number>(100000);
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold flex items-center mb-4">
-        <DollarSign className="mr-2 h-5 w-5" />
-        Loan Details
-      </h3>
-      
+      <h2 className="text-2xl font-bold">Loan Details</h2>
+      <p className="text-gray-500">
+        Please provide information about the loan you're requesting
+      </p>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField
-          control={form.control}
-          name="loanAmount"
+          control={control}
+          name="loan_amount"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Desired Loan Amount (PHP)</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                  <Input 
-                    type="number" 
-                    className={`pl-8 ${focusedFieldAnimation()}`}
-                    {...field} 
-                    disabled={isSubmitting}
-                  />
+            <FormItem className="col-span-full">
+              <FormLabel>Loan Amount</FormLabel>
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm">
+                  <span>₱100,000</span>
+                  <span>₱3,000,000</span>
                 </div>
-              </FormControl>
-              <FormDescription>
-                Amount between PHP 100,000 and PHP 3,000,000
-              </FormDescription>
+                <Slider
+                  defaultValue={[sliderValue]}
+                  min={100000}
+                  max={3000000}
+                  step={50000}
+                  onValueChange={(value) => {
+                    setSliderValue(value[0]);
+                    field.onChange(value[0]);
+                  }}
+                  className="my-4"
+                />
+                <div className="bg-gray-100 p-4 rounded-md text-center">
+                  <span className="text-sm text-gray-500">Selected amount:</span>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {formatCurrency(sliderValue)}
+                  </div>
+                </div>
+              </div>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
-          control={form.control}
-          name="loanTerm"
+          control={control}
+          name="loan_term"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Loan Term</FormLabel>
-              <FormControl>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className={focusedFieldAnimation()}>
+              <Select
+                onValueChange={(value) => field.onChange(parseInt(value))}
+                defaultValue={field.value?.toString() || ""}
+              >
+                <FormControl>
+                  <SelectTrigger>
                     <SelectValue placeholder="Select loan term" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {loanTerms.map((term) => (
-                      <SelectItem key={term.value} value={term.value}>
-                        {term.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </FormControl>
+                <SelectContent>
+                  {loanTermOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="interest_rate"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Interest Rate (%)</FormLabel>
+              <FormControl>
+                <Input type="number" step="0.1" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
+
         <FormField
-          control={form.control}
-          name="loanPurpose"
+          control={control}
+          name="loan_purpose"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Loan Purpose</FormLabel>
-              <FormControl>
-                <Select 
-                  onValueChange={field.onChange} 
-                  defaultValue={field.value}
-                  disabled={isSubmitting}
-                >
-                  <SelectTrigger className={focusedFieldAnimation()}>
-                    <SelectValue placeholder="Select loan purpose" />
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select purpose" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {loanPurposes.map((purpose) => (
-                      <SelectItem key={purpose} value={purpose}>
-                        {purpose}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                </FormControl>
+                <SelectContent>
+                  {purposeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="additional_info"
+          render={({ field }) => (
+            <FormItem className="col-span-full">
+              <FormLabel>Additional Information (optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Provide any additional details about your loan request"
+                  className="resize-none h-32"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <FormItem>
-          <FormLabel>Interest Rate</FormLabel>
-          <div className="relative">
-            <Input 
-              value="4.0%" 
-              disabled 
-              className="bg-gray-50"
-            />
-          </div>
-          <FormDescription>
-            Fixed interest rate
-          </FormDescription>
-        </FormItem>
       </div>
-
-      {/* Payment Estimate Card */}
-      {form.watch("loanAmount") >= 100000 && form.watch("loanTerm") && (
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">
-            Estimated Monthly Payment
-          </h3>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">
-                Based on {loanTerms.find(t => t.value === form.watch("loanTerm"))?.label || form.watch("loanTerm") + " months"} at 4% APR
-              </p>
-            </div>
-            <div className="text-2xl font-bold text-blue-600">
-              ₱{new Intl.NumberFormat('en-PH').format(parseFloat(calculateMonthlyPayment()))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
