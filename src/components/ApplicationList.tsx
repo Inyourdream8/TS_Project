@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -11,10 +10,24 @@ interface ApplicationListProps {
   isLoading: boolean;
   onView: (id: string) => void;
   compact?: boolean;
-  isAdmin?: boolean; // Added isAdmin property
+  isAdmin?: boolean;
+  onApprove?: (applicationId: string) => Promise<void>;
+  onReject?: (applicationId: string) => Promise<void>;
+  onDisburse?: (applicationId: string) => Promise<void>;
+  onSelect?: (application: LoanApplication) => void;
 }
 
-const ApplicationList = ({ applications, isLoading, onView, compact, isAdmin = false }: ApplicationListProps) => {
+const ApplicationList = ({
+  applications,
+  isLoading,
+  onView,
+  compact,
+  isAdmin = false,
+  onApprove,
+  onReject,
+  onDisburse,
+  onSelect
+}: ApplicationListProps) => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -71,7 +84,10 @@ const ApplicationList = ({ applications, isLoading, onView, compact, isAdmin = f
               
               <Button 
                 className="w-full mt-4"
-                onClick={() => onView(application.id)}
+                onClick={() => {
+                  onView(application.id);
+                  if (onSelect) onSelect(application);
+                }}
                 size={compact ? "sm" : "default"}
               >
                 <Eye className="h-4 w-4 mr-2" />
@@ -116,7 +132,10 @@ const ApplicationList = ({ applications, isLoading, onView, compact, isAdmin = f
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onView(application.id)}
+                  onClick={() => {
+                    onView(application.id);
+                    if (onSelect) onSelect(application);
+                  }}
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View
