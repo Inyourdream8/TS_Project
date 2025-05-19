@@ -4,14 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { ApplicationTabs } from "@/components/ApplicationTabs";
-import { ApplicationStats } from "@/components/ApplicationStats";
-import { LoanCharts } from "@/components/LoanCharts";
+import ApplicationStats from "@/components/ApplicationStats";
+import LoanCharts from "@/components/LoanCharts";
 import { TransactionsTable } from "@/components/admin/TransactionsTable";
 import { UserManagement } from "@/components/admin/UserManagement";
-import { DashboardHeader } from "@/components/DashboardHeader";
+import DashboardHeader from "@/components/DashboardHeader";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { LoanApplication } from "@/types/application";
+import { RefreshCcw, FileText, Users, CreditCard, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardContent, 
+  CardDescription 
+} from "@/components/ui/card";
+import { ApplicationActions } from "@/components/admin/ApplicationActions";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -276,9 +286,6 @@ const AdminDashboard = () => {
                     navigate(`/application/${id}`);
                     setSelectedApplication(applications.find(app => app.id === id) || null);
                   }}
-                  onApprove={handleApprove}
-                  onReject={handleReject}
-                  onSelect={(app) => setSelectedApplication(app)}
                 />
 
                 {/* Application Action Buttons */}

@@ -73,3 +73,5 @@ export const SupportCard = () => {
     </Card>
   );
 };
+
+export default SupportCard;

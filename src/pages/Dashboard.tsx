@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { DashboardHeader } from "@/components/DashboardHeader";
-import { DashboardGrid } from "@/components/DashboardGrid";
+import DashboardHeader from "@/components/DashboardHeader";
+import DashboardGrid from "@/components/DashboardGrid";
 import { ApplicationTabs } from "@/components/ApplicationTabs";
-import { ActiveLoan } from "@/components/ActiveLoan";
+import ActiveLoan from "@/components/ActiveLoan";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { LoanApplication } from "@/types/application";
-import { Loader } from "lucide-react";
+import { Loader, PlusCircle } from "lucide-react";
+import ApplicationStats from "@/components/ApplicationStats";
+import LoanCharts from "@/components/LoanCharts";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -146,26 +148,22 @@ const Dashboard = () => {
 
         <ApplicationStats 
           applications={applications}
-          userId={user.id}
         />
         
         <LoanCharts 
           applications={applications}
           transactions={transactions}
-          userId={user.id}
         />
 
         <DashboardGrid 
           transactions={transactions}
           applications={applications}
           isLoading={isLoading}
-          userId={user.id}
         />
 
         <ApplicationTabs 
           applications={applications.filter(app => app.user_id === user.id)}
           isLoading={isLoading}
-          userId={user.id}
           onView={(id) => navigate(`/application/${id}`)}
         />
       </main>
