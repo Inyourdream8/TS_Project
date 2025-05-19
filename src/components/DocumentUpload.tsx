@@ -11,7 +11,10 @@ import { Document } from "@/types/application";
 
 interface DocumentUploadProps {
   onUpload: (file: File, documentType: string) => Promise<void>;
-  documents: Document[];
+  existingFiles?: Document[];
+  maxFiles?: number;
+  acceptedTypes?: string[];
+  maxSizeInMB?: number;
 }
 
 const documentTypes = [
@@ -22,7 +25,13 @@ const documentTypes = [
   { value: "other", label: "Other Document" },
 ];
 
-const DocumentUpload = ({ onUpload, documents }: DocumentUploadProps) => {
+const DocumentUpload = ({ 
+  onUpload, 
+  existingFiles = [],
+  maxFiles = 5,
+  acceptedTypes = ["image/jpeg", "image/png", "application/pdf"],
+  maxSizeInMB = 5
+}: DocumentUploadProps) => {
   const [documentType, setDocumentType] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -88,7 +97,7 @@ const DocumentUpload = ({ onUpload, documents }: DocumentUploadProps) => {
               type="file"
               onChange={handleFileChange}
               disabled={isUploading}
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+              accept={acceptedTypes.join(",")}
             />
           </div>
         </div>
@@ -115,7 +124,7 @@ const DocumentUpload = ({ onUpload, documents }: DocumentUploadProps) => {
       <div>
         <h3 className="text-sm font-medium mb-4">Uploaded Documents</h3>
         
-        {documents.length === 0 ? (
+        {existingFiles.length === 0 ? (
           <Card>
             <CardContent className="p-6 text-center text-gray-500">
               No documents uploaded yet
@@ -123,7 +132,7 @@ const DocumentUpload = ({ onUpload, documents }: DocumentUploadProps) => {
           </Card>
         ) : (
           <div className="space-y-3">
-            {documents.map((document) => (
+            {existingFiles.map((document) => (
               <Card key={document.id}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -132,7 +141,7 @@ const DocumentUpload = ({ onUpload, documents }: DocumentUploadProps) => {
                       <div>
                         <p className="font-medium">{getDocumentTypeLabel(document.document_type)}</p>
                         <p className="text-sm text-gray-500">
-                          Uploaded on {formatDate(document.created_at)}
+                          Uploaded on {formatDate(document.uploaded_at || document.created_at || "")}
                         </p>
                       </div>
                     </div>

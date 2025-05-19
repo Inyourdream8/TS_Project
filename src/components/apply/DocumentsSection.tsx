@@ -19,11 +19,6 @@ export const DocumentsSection = ({
   documents, 
   onDocumentUpload 
 }: DocumentsSectionProps) => {
-  
-  const handleFileUpload = (file: File) => {
-    onDocumentUpload(file, "proof_of_income");
-  };
-  
   return (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold flex items-center mb-4">
@@ -39,7 +34,7 @@ export const DocumentsSection = ({
           </p>
           
           <DocumentUpload 
-            onUpload={handleFileUpload}
+            onUpload={onDocumentUpload}
             existingFiles={[]}
             maxFiles={3}
             acceptedTypes={["image/jpeg", "image/png", "application/pdf"]}

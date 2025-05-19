@@ -4,6 +4,7 @@ export interface Note {
   content: string;
   created_at: string;
   created_by: string;
+  application_id?: string;
 }
 
 export interface StatusHistory {
@@ -12,6 +13,7 @@ export interface StatusHistory {
   notes: string;
   created_at: string;
   created_by: string;
+  application_id?: string;
 }
 
 export interface Document {
@@ -20,6 +22,8 @@ export interface Document {
   file_url: string;
   document_type: string;
   uploaded_at: string;
+  created_at?: string;
+  application_id?: string;
 }
 
 export interface LoanApplication {
