@@ -34,8 +34,12 @@ export const DocumentsSection = ({
           </p>
           
           <DocumentUpload 
-            onUpload={onDocumentUpload}
-            existingFiles={[]}
+            onUpload={(file) => onDocumentUpload(file, "proof_of_income")}
+            existingFiles={documents.map(file => ({ 
+              name: file.name, 
+              size: file.size, 
+              type: file.type 
+            }))}
             maxFiles={3}
             acceptedTypes={["image/jpeg", "image/png", "application/pdf"]}
             maxSizeInMB={5}
