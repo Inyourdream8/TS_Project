@@ -5,6 +5,7 @@ import { FileText } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import DocumentUpload from "@/components/DocumentUpload";
 import { LoanApplicationFormValues } from "@/types/forms";
+import { Document } from "@/types/application";
 
 interface DocumentsSectionProps {
   form: UseFormReturn<LoanApplicationFormValues>;
@@ -36,10 +37,14 @@ export const DocumentsSection = ({
           <DocumentUpload 
             onUpload={(file) => onDocumentUpload(file, "proof_of_income")}
             existingFiles={documents.map(file => ({ 
-              name: file.name, 
-              size: file.size, 
-              type: file.type 
-            }))}
+              id: `temp-${file.name}`,
+              file_name: file.name,
+              file_size: file.size,
+              file_type: file.type,
+              file_url: URL.createObjectURL(file),
+              document_type: "proof_of_income",
+              uploaded_at: new Date().toISOString()
+            } as Document))}
             maxFiles={3}
             acceptedTypes={["image/jpeg", "image/png", "application/pdf"]}
             maxSizeInMB={5}
